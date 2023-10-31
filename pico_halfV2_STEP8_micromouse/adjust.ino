@@ -147,9 +147,6 @@ void adjustMenu(void)
         mode = incButton(mode, 7, 1);
         break;
       case SW_LM:
-        mode = decButton(mode, 1, 7);
-        break;
-      case SW_CM:
         okButton();
         if (execByModeAdjust(mode) == 1) {
           return;

@@ -48,7 +48,7 @@ void loop()
     case SW_RM:
       g_mode = incButton(g_mode, 15, 1);
       break;
-    case SW_CM:
+    case SW_LM:
       okButton();
       execByMode(g_mode);
       break;

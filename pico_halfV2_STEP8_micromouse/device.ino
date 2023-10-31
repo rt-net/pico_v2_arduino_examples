@@ -107,7 +107,7 @@ void initAll(void)
   pinMode(BLED0, OUTPUT);
   pinMode(BLED1, OUTPUT);
 
-  pinMode(SW_C, INPUT);
+  pinMode(SW_L, INPUT);
   pinMode(SW_R, INPUT);
 
   ledcSetup(0, 440, 10);
@@ -247,11 +247,11 @@ unsigned char getSW(void)
     } while (digitalRead(SW_R) == LOW);
     ret |= SW_RM;
   }
-  if (digitalRead(SW_C) == LOW) {
+  if (digitalRead(SW_L) == LOW) {
     do {
       delay(20);
-    } while (digitalRead(SW_C) == LOW);
-    ret |= SW_CM;
+    } while (digitalRead(SW_L) == LOW);
+    ret |= SW_LM;
   }
   return ret;
 }

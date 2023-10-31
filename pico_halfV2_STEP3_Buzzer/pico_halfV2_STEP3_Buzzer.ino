@@ -17,7 +17,7 @@
 #define LED2 15
 #define LED3 16
 
-#define SW_C 13
+#define SW_L 13
 #define SW_R 14
 
 #define BUZZER 40
@@ -87,7 +87,7 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_C, INPUT);
+  pinMode(SW_L, INPUT);
   pinMode(SW_R, INPUT);
 
   ledcSetup(0, 440, 10);
@@ -101,7 +101,7 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while ( digitalRead(SW_C) & digitalRead(SW_R)) {
+  while ( digitalRead(SW_L) & digitalRead(SW_R)) {
     continue;
   }
   if (digitalRead(SW_R) == 0) {
@@ -115,7 +115,7 @@ void loop()
     }
     setLED(g_mode);
   }
-  if (digitalRead(SW_C) == 0) {
+  if (digitalRead(SW_L) == 0) {
     ledcWriteTone(0, INC_FREQ);
     delay(80);
     ledcWriteTone(0, DEC_FREQ);
@@ -124,7 +124,7 @@ void loop()
     delay(300);
     execByMode(g_mode);
   }
-  while (!(digitalRead(SW_C) & digitalRead(SW_R))) {
+  while (!(digitalRead(SW_L) & digitalRead(SW_R))) {
     continue;
   }
   delay(30);

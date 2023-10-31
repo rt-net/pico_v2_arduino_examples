@@ -17,10 +17,10 @@
 #define LED2 15
 #define LED3 16
 
-#define SW_C 13
+#define SW_L 13
 #define SW_R 14
 
-int g_state_r, g_state_c;
+int g_state_r, g_state_l;
 
 void setup()
 {
@@ -30,27 +30,27 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_C, INPUT);
+  pinMode(SW_L, INPUT);
   pinMode(SW_R, INPUT);
 
-  g_state_r = g_state_c  = 0;
+  g_state_r = g_state_l  = 0;
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while ( digitalRead(SW_C) && digitalRead(SW_R)) {
+  while ( digitalRead(SW_L) && digitalRead(SW_R)) {
     continue;
   }
   if (digitalRead(SW_R) == 0) {
     digitalWrite(LED3, (++g_state_r) & 0x01);
   }
-  if (digitalRead(SW_C) == 0) {
-    digitalWrite(LED2, (++g_state_c) & 0x01);
-    digitalWrite(LED1, (g_state_c)&0x01);
+  if (digitalRead(SW_L) == 0) {
+    digitalWrite(LED2, (++g_state_l) & 0x01);
+    digitalWrite(LED1, (g_state_l)&0x01);
   }
   delay(30);
-  while (!(digitalRead(SW_C) && digitalRead(SW_R))) {
+  while (!(digitalRead(SW_L) && digitalRead(SW_R))) {
     continue;
   }
   delay(30);

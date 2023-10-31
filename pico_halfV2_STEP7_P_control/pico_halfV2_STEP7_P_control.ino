@@ -17,7 +17,7 @@
 #define LED2 15
 #define LED3 16
 
-#define SW_C 13
+#define SW_L 13
 #define SW_R 14
 
 #define MOTOR_EN 12
@@ -159,7 +159,7 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_C, INPUT);
+  pinMode(SW_L, INPUT);
   pinMode(SW_R, INPUT);
 
   //motor disable
@@ -220,7 +220,7 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while (digitalRead(SW_C) & digitalRead(SW_R)) {
+  while (digitalRead(SW_L) & digitalRead(SW_R)) {
     continue;
   }
 

@@ -9,7 +9,7 @@
 #define BLED0 18
 #define BLED1 17
 
-#define SW_C 13
+#define SW_L 13
 #define SW_R 14
 
 #define SLED_F 2
@@ -30,7 +30,7 @@
 #define PWM_L 46
 
 #define SW_LM 1
-#define SW_CM 2
+//#define SW_CM 2
 #define SW_RM 4
 
 #define BUZZER_CH 0
