@@ -13,7 +13,7 @@ jobs:
   arduino-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: arduino/arduino-lint-action@v1
         with:
           recursive: true
@@ -22,7 +22,7 @@ jobs:
     needs: arduino-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # 各スケッチファイルの.ino、.hファイルに対してclang-formatによる整形が必要か判定する
       # 正規表現を簡単にするためzshを使用する
       - run: sudo apt install -y clang-format zsh
