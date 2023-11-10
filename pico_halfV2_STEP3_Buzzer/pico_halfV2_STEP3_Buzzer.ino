@@ -101,7 +101,7 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while ( digitalRead(SW_L) & digitalRead(SW_R)) {
+  while (digitalRead(SW_L) & digitalRead(SW_R)) {
     continue;
   }
   if (digitalRead(SW_R) == 0) {

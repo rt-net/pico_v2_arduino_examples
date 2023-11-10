@@ -62,7 +62,7 @@ void sensorInterrupt(void)
     case 0:
       g_sen_r.p_value = g_sen_r.value;
       g_sen_l.p_value = g_sen_l.value;
-      getSensorS(&g_sen_r.value,&g_sen_l.value);
+      getSensorS(&g_sen_r.value, &g_sen_l.value);
       if (g_sen_r.value > g_sen_r.th_wall) {
         g_sen_r.is_wall = true;
       } else {
@@ -91,7 +91,7 @@ void sensorInterrupt(void)
     case 1:
       g_sen_fr.p_value = g_sen_fr.value;
       g_sen_fl.p_value = g_sen_fl.value;
-      getSensorF(&g_sen_fr.value,&g_sen_fl.value);
+      getSensorF(&g_sen_fr.value, &g_sen_fl.value);
       if (g_sen_fr.value > g_sen_fr.th_wall) {
         g_sen_fr.is_wall = true;
       } else {

@@ -4,7 +4,7 @@
 #define TIRE_DIAMETER (24.7)
 #define TREAD_WIDTH (31.5)
 #define TREAD_CIRCUIT (TREAD_WIDTH * PI / 4)
-#define PULSE (TIRE_DIAMETER * PI / (35.0/10.0*20.0*4.0))
+#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 * 4.0))
 #define MIN_HZ 40
 
 #define WAITLOOP_SLED 10

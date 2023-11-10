@@ -28,7 +28,7 @@
 
 #define MIN_HZ 40
 #define TIRE_DIAMETER (24.70)
-#define PULSE (TIRE_DIAMETER * PI / (35.0/10.0*20.0*4.0))
+#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 * 4.0))
 #define MIN_SPEED (MIN_HZ * PULSE)
 #define TREAD_WIDTH (31.5)
 

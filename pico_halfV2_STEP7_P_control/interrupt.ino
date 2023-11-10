@@ -50,7 +50,7 @@ void controlInterrupt(void)
 void sensorInterrupt(void)
 {
   static char cnt = 0;
-  short temp_r,temp_l;
+  short temp_r, temp_l;
 
   switch (cnt) {
     case 0:
@@ -61,8 +61,8 @@ void sensorInterrupt(void)
       for (int i = 0; i < 10; i++) {
         asm("nop \n");
       }
-      g_sen_fr.value = analogRead(AD4)-temp_r;
-      g_sen_fl.value = analogRead(AD1)-temp_l;
+      g_sen_fr.value = analogRead(AD4) - temp_r;
+      g_sen_fl.value = analogRead(AD1) - temp_l;
       digitalWrite(SLED_F, LOW);
       if (g_sen_fr.value > g_sen_fr.th_wall) {
         g_sen_fr.is_wall = true;
@@ -83,8 +83,8 @@ void sensorInterrupt(void)
       for (int i = 0; i < 10; i++) {
         asm("nop \n");
       }
-      g_sen_r.value = analogRead(AD3)-temp_r;
-      g_sen_l.value = analogRead(AD2)-temp_l;
+      g_sen_r.value = analogRead(AD3) - temp_r;
+      g_sen_l.value = analogRead(AD2) - temp_l;
       digitalWrite(SLED_S, LOW);
       if (g_sen_r.value > g_sen_r.th_wall) {
         g_sen_r.is_wall = true;
