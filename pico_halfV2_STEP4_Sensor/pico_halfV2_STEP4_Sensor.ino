@@ -33,7 +33,7 @@ portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 void IRAM_ATTR onTimer1(void)
 {
   static char cnt = 0;
-  short temp_r,temp_l;
+  short temp_r, temp_l;
   portENTER_CRITICAL_ISR(&g_timer_mux);
   switch (cnt) {
     case 0:

@@ -257,31 +257,31 @@ unsigned char getSW(void)
 }
 
 //sensor
-void getSensorS(volatile short *r_value, volatile short *l_value) 
+void getSensorS(volatile short * r_value, volatile short * l_value)
 {
-  short temp_r,temp_l;
-  temp_r=analogRead(AD3);
-  temp_l=analogRead(AD2);
+  short temp_r, temp_l;
+  temp_r = analogRead(AD3);
+  temp_l = analogRead(AD2);
   digitalWrite(SLED_S, HIGH);
   for (int i = 0; i < WAITLOOP_SLED; i++) {
     asm("nop \n");
   }
-  *r_value = analogRead(AD3)-temp_r;
-  *l_value = analogRead(AD2)-temp_l;
+  *r_value = analogRead(AD3) - temp_r;
+  *l_value = analogRead(AD2) - temp_l;
   digitalWrite(SLED_S, LOW);
 }
 
-void getSensorF(volatile short *fr_value, volatile short *fl_value)
+void getSensorF(volatile short * fr_value, volatile short * fl_value)
 {
-  short temp_r,temp_l;
-  temp_r=analogRead(AD4);
-  temp_l=analogRead(AD1);
+  short temp_r, temp_l;
+  temp_r = analogRead(AD4);
+  temp_l = analogRead(AD1);
   digitalWrite(SLED_F, HIGH);  //LED点灯
   for (int i = 0; i < WAITLOOP_SLED; i++) {
     asm("nop \n");
   }
-  *fr_value = analogRead(AD4)-temp_r;
-  *fl_value = analogRead(AD1)-temp_l;
+  *fr_value = analogRead(AD4) - temp_r;
+  *fl_value = analogRead(AD1) - temp_l;
   digitalWrite(SLED_F, LOW);  //LED消灯
 }
 
