@@ -1,12 +1,12 @@
 # pico_halfV2_arduino_examples
-Pi:Co Half V2用のArduinoサンプルスケッチ集
+Pi:Co V2用のArduinoサンプルスケッチ集
 
 
 ## サンプルスケッチについて
 
 ### STEP1 ~ STEP8
 
-- Pi:Co Half V2のハードウェアを動かすための、Arduinoスケッチの書き方をまとめています
+- Pi:Co V2のハードウェアを動かすための、Arduinoスケッチの書き方をまとめています
 
 
 ## スケッチファイルの自動整形について
