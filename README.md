@@ -1,4 +1,4 @@
-# pico_halfV2_arduino_examples
+# pico_v2_arduino_examples
 Pi:Co V2用のArduinoサンプルスケッチ集
 
 
