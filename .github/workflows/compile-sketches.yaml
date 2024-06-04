@@ -27,7 +27,8 @@ jobs:
           fqbn: esp32:esp32:esp32s3
           platforms: |  # ESP32公式のpackage indexを使用する
             - name: esp32:esp32
-              source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/d0299bee3d120ebb745457585bec2856f0dbdb8f/package_esp32_index.json
+              source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+              version: 2.0.17
           sketch-paths: |
             - pico_v2_STEP1_LED
             - pico_v2_STEP2_SWITCH
