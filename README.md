@@ -1,6 +1,9 @@
 # pico_v2_arduino_examples
 Pi:Co V2用のArduinoサンプルスケッチ集
 
+## 動作環境
+
+- arduino-esp32 : v2.0.17
 
 ## サンプルスケッチについて
 
