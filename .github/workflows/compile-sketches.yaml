@@ -57,8 +57,10 @@ jobs:
         with:
           name: ${{ env.SKETCHES_REPORTS_ARTIFACT_NAME }}
           path: ${{ env.SKETCHES_REPORTS_PATH }}
+        continue-on-error: true
 
       - uses: arduino/report-size-deltas@v1
         with:
           sketches-reports-source: ${{ env.SKETCHES_REPORTS_PATH }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
