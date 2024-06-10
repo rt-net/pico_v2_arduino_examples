@@ -81,9 +81,9 @@ void setup()
 
   Serial.begin(115200);
 
-  g_timer1 = timerBegin(1000000);  //1us
+  g_timer1 = timerBegin(1000000);  //1MHz(1us)
   timerAttachInterrupt(g_timer1, &onTimer1);
-  timerAlarm(g_timer1, 500, true, 0);  //2kHz
+  timerAlarm(g_timer1, 500, true, 0);  //500 * 1us = 500us(2kHz)
   timerStart(g_timer1);
 }
 
