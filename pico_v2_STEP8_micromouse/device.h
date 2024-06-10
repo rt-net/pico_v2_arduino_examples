@@ -33,6 +33,6 @@
 //#define SW_CM 2
 #define SW_RM 4
 
-#define BUZZER_CH 0
+
 
 #endif  // DEVICE_H_
