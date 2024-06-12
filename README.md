@@ -1,5 +1,11 @@
 # pico_v2_arduino_examples
-Pi:Co V2用のArduinoサンプルスケッチ集
+
+[![Compile Sketches](https://github.com/rt-net/pico_v2_arduino_examples/actions/workflows/compile-sketches.yaml/badge.svg)](https://github.com/rt-net/pico_v2_arduino_examples/actions/workflows/compile-sketches.yaml)
+[![Lint](https://github.com/rt-net/pico_v2_arduino_examples/actions/workflows/lint.yaml/badge.svg)](https://github.com/rt-net/pico_v2_arduino_examples/actions/workflows/lint.yaml)
+
+![pico_v2](https://rt-net.github.io/images/picov2/pico_v2.jpg)
+
+Pi:Co V2用のArduinoサンプルスケッチ集です。
 
 ## 動作環境
 
