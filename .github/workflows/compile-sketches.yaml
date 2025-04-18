@@ -28,7 +28,12 @@ jobs:
           platforms: |  # ESP32公式のpackage indexを使用する
             - name: esp32:esp32
               source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-              version: 3.0.1
+              version: 3.1.1
+          libraries: |  # 依存パッケージを指定
+            - name: AsyncTCP
+              source-url: https://github.com/ESP32Async/AsyncTCP.git
+            - name: ESPAsyncWebServer
+              source-url: https://github.com/ESP32Async/ESPAsyncWebServer.git
           sketch-paths: |
             - pico_v2_STEP1_LED
             - pico_v2_STEP2_SWITCH
