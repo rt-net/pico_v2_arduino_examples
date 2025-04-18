@@ -29,12 +29,12 @@ typedef struct
   bool is_control;
 } t_sensor;
 
-
-class SENSOR{
+class SENSOR
+{
 public:
-	volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
-	volatile short battery_value;
-	void interrupt(void);
+  volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
+  volatile short battery_value;
+  void interrupt(void);
 };
 
 extern SENSOR g_sensor;

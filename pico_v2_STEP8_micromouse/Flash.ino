@@ -273,7 +273,7 @@ void paramRead(void)
       flashInit();
       break;
     }
-    g_run.pulse = g_run.tire_diameter * PI / (35.0 / 10.0 * 20.0 *8.0);
+    g_run.pulse = g_run.tire_diameter * PI / (35.0 / 10.0 * 20.0 * 8.0);
     cmds[0] = {"\0"};
     cmds[1] = {"\0"};
   }

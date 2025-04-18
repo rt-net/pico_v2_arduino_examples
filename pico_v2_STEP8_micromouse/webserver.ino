@@ -17,17 +17,15 @@
 AsyncWebServer server(80);
 
 #ifdef AP_MODE
-const char* ssid = "PICO2";
-const char* password = "12345678";
+const char * ssid = "PICO2";
+const char * password = "12345678";
 #else
-const char* ssid = "使用しているルータのSSID";
-const char* password = "ルータのパスワード";
+const char * ssid = "使用しているルータのSSID";
+const char * password = "ルータのパスワード";
 #endif
 
-
-
-void webServerSetup(void) {
-
+void webServerSetup(void)
+{
 #ifdef AP_MODE
   WiFi.softAP(ssid, password);
   IPAddress myIP = WiFi.softAPIP();
@@ -43,7 +41,7 @@ void webServerSetup(void) {
   Serial.println(WiFi.localIP());
 #endif
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     String html = "";
     html += "<!DOCTYPE html>";
     html += "<html lang=\"en\">";
@@ -108,12 +106,14 @@ void webServerSetup(void) {
     html += "></th><th><input name=\"ref_right\" type=\"text\" size=\"10\" value=";
     html += String(g_sensor.sen_r.ref);
     html += "></th></tr>";
-    html += "<tr><th>SIDE Threshold</th><td><input name=\"th_left\" type=\"text\" size=\"10\" value=";
+    html +=
+      "<tr><th>SIDE Threshold</th><td><input name=\"th_left\" type=\"text\" size=\"10\" value=";
     html += String(g_sensor.sen_l.th_wall);
     html += "></td><td><input name=\"th_right\" type=\"text\" size=\"10\" value=";
     html += String(g_sensor.sen_r.th_wall);
     html += "></td></tr>";
-    html += "<tr><th>FRONT Threshold</th><th><input name=\"th_fl\" type=\"text\"size=\"10\"  value=";
+    html +=
+      "<tr><th>FRONT Threshold</th><th><input name=\"th_fl\" type=\"text\"size=\"10\"  value=";
     html += String(g_sensor.sen_fl.th_wall);
     html += "></th><th><input name=\"th_fr\" type=\"text\" size=\"10\" value=";
     html += String(g_sensor.sen_fr.th_wall);
@@ -130,10 +130,12 @@ void webServerSetup(void) {
 
     html += "<p><h2>Tire Parameter</h2></p>";
     html += "<table align=\"center\">";
-    html += "<tr><th>TIRE_DIAMETER</th><td><input name=\"tire_dia\" type=\"text\" size=\"10\" value=";
+    html +=
+      "<tr><th>TIRE_DIAMETER</th><td><input name=\"tire_dia\" type=\"text\" size=\"10\" value=";
     html += String(g_run.tire_diameter, 3);
     html += ">mm</td></tr>";
-    html += "<tr><th>TREAD_WIDTH</th><td><input name=\"tread_width\" type=\"text\" size=\"10\" value=";
+    html +=
+      "<tr><th>TREAD_WIDTH</th><td><input name=\"tread_width\" type=\"text\" size=\"10\" value=";
     html += String(g_run.tread_width, 3);
     html += ">mm</td></tr>";
     html += "</table>";
@@ -154,7 +156,8 @@ void webServerSetup(void) {
 
     html += "<p><h2>Accel Parameter</h2></p>";
     html += "<table align=\"center\">";
-    html += "<tr><th>Search accel</th><td><input name=\"search_acc\" type=\"text\" size=\"10\" value=";
+    html +=
+      "<tr><th>Search accel</th><td><input name=\"search_acc\" type=\"text\" size=\"10\" value=";
     html += String(g_run.search_accel, 3);
     html += ">mm</td></tr>";
     html += "<tr><th>Turn accel</th><td><input name=\"turn_acc\" type=\"text\" size=\"10\" value=";
@@ -166,7 +169,8 @@ void webServerSetup(void) {
 
     html += "<p><h2>Speed Parameter</h2></p>";
     html += "<table align=\"center\">";
-    html += "<tr><th>Search speed</th><td><input name=\"search_spd\" type=\"text\" size=\"10\" value=";
+    html +=
+      "<tr><th>Search speed</th><td><input name=\"search_spd\" type=\"text\" size=\"10\" value=";
     html += String(g_run.search_speed);
     html += ">mm</td></tr>";
     html += "<tr><th>max speed</th><td><input name=\"max_spd\" type=\"text\" size=\"10\" value=";
@@ -175,7 +179,6 @@ void webServerSetup(void) {
     html += "</table>";
     html += "<br>";
     html += "<br>";
-
 
     html += "<input type=\"submit\" value=\"Save\">";
     html += "</form><br>";
@@ -247,28 +250,27 @@ void webServerSetup(void) {
     request->send(200, "text/html", html);
   });
 
-  server.on("/voltage", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/voltage", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/plain", String(g_sensor.battery_value) + "mV");
   });
 
-  server.on("/left_value", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/left_value", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/plain", String(g_sensor.sen_l.value));
   });
 
-  server.on("/right_value", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/right_value", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/plain", String(g_sensor.sen_r.value));
   });
 
-  server.on("/left_front_value", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/left_front_value", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/plain", String(g_sensor.sen_fl.value));
   });
 
-  server.on("/right_front_value", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/right_front_value", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(200, "text/plain", String(g_sensor.sen_fr.value));
   });
 
-
-  server.on("/get", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/get", HTTP_GET, [](AsyncWebServerRequest * request) {
     String inputMessage;
 
     inputMessage = request->getParam("tire_dia")->value();
@@ -309,10 +311,9 @@ void webServerSetup(void) {
     inputMessage = request->getParam("max_spd")->value();
     g_run.max_speed = inputMessage.toInt();
 
-
     Serial.println("saved");
     paramWrite();
-    g_run.pulse = g_run.tire_diameter * PI / (35.0 / 10.0 * 20.0 *8.0);
+    g_run.pulse = g_run.tire_diameter * PI / (35.0 / 10.0 * 20.0 * 8.0);
 
     buzzerEnable(INC_FREQ);
     delay(30);

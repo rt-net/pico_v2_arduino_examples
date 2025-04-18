@@ -63,7 +63,6 @@ void RUN::interrupt(void)
   if (speed_target_l < MIN_SPEED) speed_target_l = MIN_SPEED;
 
   speedSet(speed_target_l, speed_target_r);
-
 }
 
 void RUN::dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right) { motorDirectionSet(dir_left, dir_right); }

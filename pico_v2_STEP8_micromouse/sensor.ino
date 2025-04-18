@@ -16,15 +16,13 @@
 
 SENSOR g_sensor;
 
-void sensorInterrupt(void) {
-  g_sensor.interrupt();
-}
+void sensorInterrupt(void) { g_sensor.interrupt(); }
 
-void SENSOR::interrupt(void) 
+void SENSOR::interrupt(void)
 {
   static char cnt = 0;
   static char bled_cnt = 0;
-  static int low_batt_cnt =0;
+  static int low_batt_cnt = 0;
 
   switch (cnt) {
     case 0:
@@ -81,13 +79,13 @@ void SENSOR::interrupt(void)
       } else {
         bledSet(2);
       }
-      if(battery_value < BATT_MIN){
+      if (battery_value < BATT_MIN) {
         low_batt_cnt++;
-        if(low_batt_cnt>=100){
-          buzzerEnable(400);        
+        if (low_batt_cnt >= 100) {
+          buzzerEnable(400);
         }
-      }else{
-        low_batt_cnt=0;
+      } else {
+        low_batt_cnt = 0;
       }
       break;
     default:

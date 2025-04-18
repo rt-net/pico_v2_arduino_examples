@@ -14,13 +14,13 @@
 #ifndef SRC_SEARCH_H_
 #define SRC_SEARCH_H_
 
-
-class SEARCH {
+class SEARCH
+{
 public:
-	void lefthand(void);
-	void adachi(char gx, char gy);
-private:
+  void lefthand(void);
+  void adachi(char gx, char gy);
 
+private:
 };
 extern SEARCH g_search;
 #endif /* SRC_SEARCH_H_ */
