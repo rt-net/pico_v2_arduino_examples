@@ -105,8 +105,8 @@ void deviceInit(void)
   pinMode(BLED0, OUTPUT);
   pinMode(BLED1, OUTPUT);
 
-  pinMode(SW_L, INPUT_PULLUP);
-  pinMode(SW_R, INPUT_PULLUP);
+  pinMode(SW_L, INPUT);
+  pinMode(SW_R, INPUT);
 
   ledcAttach(BUZZER, 440, 10);
   ledcWrite(BUZZER, 0);

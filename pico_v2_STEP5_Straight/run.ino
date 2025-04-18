@@ -37,7 +37,6 @@ void RUN::interrupt(void)
   speedSet(speed, speed);
 }
 
-
 void RUN::dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right)
 {
   if (dir_left == MOT_FORWARD) {

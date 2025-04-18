@@ -44,7 +44,6 @@ volatile unsigned int g_step_r, g_step_l;
 unsigned short g_step_hz_r = MIN_HZ;
 unsigned short g_step_hz_l = MIN_HZ;
 
-
 //割り込み
 //目標値の更新周期1kHz
 void IRAM_ATTR onTimer0(void)
@@ -94,8 +93,8 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_L, INPUT_PULLUP);
-  pinMode(SW_R, INPUT_PULLUP);
+  pinMode(SW_L, INPUT);
+  pinMode(SW_R, INPUT);
 
   //motor disable
   pinMode(MOTOR_EN, OUTPUT);

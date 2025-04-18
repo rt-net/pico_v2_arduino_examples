@@ -94,8 +94,8 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_L, INPUT_PULLUP);
-  pinMode(SW_R, INPUT_PULLUP);
+  pinMode(SW_L, INPUT);
+  pinMode(SW_R, INPUT);
 
   //motor disable
   pinMode(MOTOR_EN, OUTPUT);

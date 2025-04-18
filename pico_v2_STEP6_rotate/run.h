@@ -17,10 +17,7 @@
 
 typedef enum { front, right, left, rear } t_local_direction;
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {

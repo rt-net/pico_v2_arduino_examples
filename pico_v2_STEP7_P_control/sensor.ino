@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "sensor.h"
 
 SENSOR g_sensor;
 
-
-SENSOR::SENSOR() {  //コンストラクタ
+SENSOR::SENSOR()
+{  //コンストラクタ
 
   sen_r.ref = REF_SEN_R;
   sen_l.ref = REF_SEN_L;
@@ -31,16 +30,11 @@ SENSOR::SENSOR() {  //コンストラクタ
 
   sen_r.th_control = CONTH_SEN_R;
   sen_l.th_control = CONTH_SEN_L;
-
-
 }
 
-void sensorInterrupt(void) {
-  g_sensor.interrupt();
-}
+void sensorInterrupt(void) { g_sensor.interrupt(); }
 
-
-void SENSOR::interrupt(void) 
+void SENSOR::interrupt(void)
 {
   static char cnt = 0;
   short temp_r, temp_l;

@@ -40,7 +40,7 @@
 
 #define MIN_HZ 40
 #define TIRE_DIAMETER (24.70)
-#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 *8.0))
+#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 * 8.0))
 #define MIN_SPEED (MIN_HZ * PULSE)
 
 //環境に合わせて変更する
@@ -126,8 +126,8 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_L, INPUT_PULLUP);
-  pinMode(SW_R, INPUT_PULLUP);
+  pinMode(SW_L, INPUT);
+  pinMode(SW_R, INPUT);
 
   //motor disable
   pinMode(MOTOR_EN, OUTPUT);
@@ -168,7 +168,6 @@ void setup()
   timerAttachInterrupt(g_timer3, &isrL);
   timerAlarm(g_timer3, 13333, true, 0);  //13333 * 0.5us = 6666us(150Hz)
   timerStart(g_timer3);
-
 }
 
 void loop()

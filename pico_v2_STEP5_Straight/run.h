@@ -15,10 +15,7 @@
 #ifndef SRC_RUN_H_
 #define SRC_RUN_H_
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {
@@ -28,7 +25,6 @@ public:
   volatile double speed;
   volatile double max_speed;
   volatile double min_speed;
-
 
   RUN();
   void interrupt(void);
