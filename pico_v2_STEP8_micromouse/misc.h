@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void controlInterrupt(void)
+#ifndef SRC_MISC_H_
+#define SRC_MISC_H_
+
+class MISC
 {
-  g_speed += g_accel;
+public:
+  unsigned char mode_select;
+  void modeExec(int mode);
+  short buttonInc(short _data, short limit, short limit_data);
+  void buttonOk(void);
+  void goalAppeal(void);
+  void errorAppeal(void);
+};
 
-  if (g_speed > g_max_speed) {
-    g_speed = g_max_speed;
-  }
-  if (g_speed < g_min_speed) {
-    g_speed = g_min_speed;
-  }
+extern MISC g_misc;
 
-  g_step_hz_l = g_step_hz_r = (unsigned short)(g_speed / PULSE);
-}
+#endif /* SRC_MISC_H_ */

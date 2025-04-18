@@ -17,22 +17,20 @@ hw_timer_t * g_timer1 = NULL;
 hw_timer_t * g_timer2 = NULL;
 hw_timer_t * g_timer3 = NULL;
 
-volatile unsigned short g_step_hz_r, g_step_hz_l;
+volatile bool g_motor_move = 0;
 volatile unsigned int g_step_r, g_step_l;
+unsigned short g_step_hz_r = 30;
+unsigned short g_step_hz_l = 30;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
-void setRStepHz(short data) { g_step_hz_r = data; }
-
-void setLStepHz(short data) { g_step_hz_l = data; }
-
-void clearStepR(void) { g_step_r = 0; }
-
-void clearStepL(void) { g_step_l = 0; }
-
-unsigned int getStepR(void) { return g_step_r; }
-
-unsigned int getStepL(void) { return g_step_l; }
+void stepHzSetR(short data) { g_step_hz_r = data; }
+void stepHzSetL(short data) { g_step_hz_l = data; }
+void stepClearR(void) { g_step_r = 0; }
+void stepClearL(void) { g_step_l = 0; }
+unsigned int stepGetR(void) { return g_step_r; }
+unsigned int stepGetL(void) { return g_step_l; }
+void motorMoveSet(bool data) { g_motor_move = data; }
 
 void IRAM_ATTR onTimer0(void)
 {
@@ -97,7 +95,7 @@ void PWMInterruptStop(void)
   timerStop(g_timer3);
 }
 
-void initAll(void)
+void deviceInit(void)
 {
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
@@ -107,8 +105,8 @@ void initAll(void)
   pinMode(BLED0, OUTPUT);
   pinMode(BLED1, OUTPUT);
 
-  pinMode(SW_L, INPUT);
-  pinMode(SW_R, INPUT);
+  pinMode(SW_L, INPUT_PULLUP);
+  pinMode(SW_R, INPUT_PULLUP);
 
   ledcAttach(BUZZER, 440, 10);
   ledcWrite(BUZZER, 0);
@@ -128,13 +126,6 @@ void initAll(void)
   digitalWrite(CW_L, LOW);
   digitalWrite(PWM_R, LOW);
   digitalWrite(PWM_L, LOW);
-
-  if (!SPIFFS.begin(true)) {
-    while (1) {
-      Serial.println("SPIFFS Mount Failed");
-      delay(100);
-    }
-  }
 
   g_timer0 = timerBegin(1000000);
   timerAttachInterrupt(g_timer0, &onTimer0);
@@ -157,41 +148,17 @@ void initAll(void)
   timerStart(g_timer3);
 
   Serial.begin(115200);
-
-  g_sen_r.ref = REF_SEN_R;
-  g_sen_l.ref = REF_SEN_L;
-  g_sen_r.th_wall = TH_SEN_R;
-  g_sen_l.th_wall = TH_SEN_L;
-
-  g_sen_fr.th_wall = TH_SEN_FR;
-  g_sen_fl.th_wall = TH_SEN_FL;
-
-  g_sen_r.th_control = CONTROL_TH_SEN_R;
-  g_sen_l.th_control = CONTROL_TH_SEN_L;
-
-  g_con_wall.kp = CON_WALL_KP;
-
-  g_map_control.setGoalX(GOAL_X);
-  g_map_control.setGoalY(GOAL_Y);
-
-  g_motor_move = false;
-  setRStepHz(MIN_SPEED);
-  setLStepHz(MIN_SPEED);
-
-  enableBuzzer(INC_FREQ);
-  delay(80);
-  disableBuzzer();
 }
 
 //LED
-void setLED(unsigned char data)
+void ledSet(unsigned char data)
 {
   digitalWrite(LED0, data & 0x01);
   digitalWrite(LED1, (data >> 1) & 0x01);
   digitalWrite(LED2, (data >> 2) & 0x01);
   digitalWrite(LED3, (data >> 3) & 0x01);
 }
-void setBLED(char data)
+void bledSet(char data)
 {
   if (data & 0x01) {
     digitalWrite(BLED0, HIGH);
@@ -206,22 +173,14 @@ void setBLED(char data)
 }
 
 //Buzzer
-void enableBuzzer(short f) { ledcWriteTone(BUZZER, f); }
-void disableBuzzer(void)
-{
-  ledcWrite(BUZZER, 0);  //duty 0% Buzzer OFF
-}
+void buzzerEnable(short f) { ledcWriteTone(BUZZER, f); }
+void buzzerDisable(void) { ledcWrite(BUZZER, 0); }  //duty 0% Buzzer OFF
 
 //motor
-void enableMotor(void)
-{
-  digitalWrite(MOTOR_EN, HIGH);  //Power ON
-}
-void disableMotor(void)
-{
-  digitalWrite(MOTOR_EN, LOW);  //Power OFF
-}
-void moveDir(t_CW_CCW left_CW, t_CW_CCW right_CW)
+void motorEnable(void) { digitalWrite(MOTOR_EN, HIGH); }  //Power ON
+void motorDisable(void) { digitalWrite(MOTOR_EN, LOW); }  //Power OFF
+
+void motorDirectionSet(t_CW_CCW left_CW, t_CW_CCW right_CW)
 {  //左右のモータの回転方向を指示する
   if (right_CW == MOT_FORWARD) {
     digitalWrite(CW_R, HIGH);
@@ -237,7 +196,7 @@ void moveDir(t_CW_CCW left_CW, t_CW_CCW right_CW)
 }
 
 //SWITCH
-unsigned char getSW(void)
+unsigned char switchGet(void)
 {
   unsigned char ret = 0;
   if (digitalRead(SW_R) == LOW) {
@@ -256,7 +215,7 @@ unsigned char getSW(void)
 }
 
 //sensor
-void getSensorS(volatile short * r_value, volatile short * l_value)
+void sensorGetS(volatile short * r_value, volatile short * l_value)
 {
   short temp_r, temp_l;
   temp_r = analogRead(AD3);
@@ -270,7 +229,7 @@ void getSensorS(volatile short * r_value, volatile short * l_value)
   digitalWrite(SLED_S, LOW);
 }
 
-void getSensorF(volatile short * fr_value, volatile short * fl_value)
+void sensorGetF(volatile short * fr_value, volatile short * fl_value)
 {
   short temp_r, temp_l;
   temp_r = analogRead(AD4);
@@ -284,8 +243,7 @@ void getSensorF(volatile short * fr_value, volatile short * fl_value)
   digitalWrite(SLED_F, LOW);  //LED消灯
 }
 
-short getBatteryVolt(void)
+short batteryVoltGet(void)
 {
-  short inputVoltage = (double)analogReadMilliVolts(AD0) / 1.0 * (1.0 + 10.0);
-  return inputVoltage;
+  return (short)((double)analogReadMilliVolts(AD0) / 1.0 * (1.0 + 10.0));
 }

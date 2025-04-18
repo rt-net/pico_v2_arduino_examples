@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "run.h"
+#include "sensor.h"
+
 #define LED0 42
 #define LED1 41
 #define LED2 15
@@ -37,7 +40,7 @@
 
 #define MIN_HZ 40
 #define TIRE_DIAMETER (24.70)
-#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 * 8.0))
+#define PULSE (TIRE_DIAMETER * PI / (35.0 / 10.0 * 20.0 *8.0))
 #define MIN_SPEED (MIN_HZ * PULSE)
 
 //環境に合わせて変更する
@@ -55,32 +58,6 @@
 #define CON_WALL_KP (0.5)
 //ここまで
 
-typedef struct
-{
-  short value;
-  short p_value;
-  short error;
-  short ref;
-  short th_wall;
-  short th_control;
-  bool is_wall;
-  bool is_control;
-} t_sensor;
-
-typedef struct
-{
-  double control;
-  double error;
-  double p_error;
-  double diff;
-  double sum;
-  double sum_max;
-  double kp;
-  double kd;
-  double ki;
-  bool enable;
-} t_control;
-
 hw_timer_t * g_timer0 = NULL;
 hw_timer_t * g_timer1 = NULL;
 hw_timer_t * g_timer2 = NULL;
@@ -88,20 +65,10 @@ hw_timer_t * g_timer3 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
+volatile bool g_motor_move = 0;
+volatile unsigned int g_step_r, g_step_l;
 unsigned short g_step_hz_r = MIN_HZ;
 unsigned short g_step_hz_l = MIN_HZ;
-
-t_sensor g_sen_r, g_sen_l, g_sen_fr, g_sen_fl;
-t_control g_con_wall;
-volatile short g_battery_value;
-
-volatile unsigned int g_step_r, g_step_l;
-double g_max_speed;
-double g_min_speed;
-double g_accel = 0.0;
-volatile double g_speed = MIN_SPEED;
-
-volatile bool g_motor_move = 0;
 
 //割り込み
 //目標値の更新周期1kHz
@@ -159,8 +126,8 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_L, INPUT);
-  pinMode(SW_R, INPUT);
+  pinMode(SW_L, INPUT_PULLUP);
+  pinMode(SW_R, INPUT_PULLUP);
 
   //motor disable
   pinMode(MOTOR_EN, OUTPUT);
@@ -202,19 +169,6 @@ void setup()
   timerAlarm(g_timer3, 13333, true, 0);  //13333 * 0.5us = 6666us(150Hz)
   timerStart(g_timer3);
 
-  g_sen_r.ref = REF_SEN_R;
-  g_sen_l.ref = REF_SEN_L;
-
-  g_sen_r.th_wall = TH_SEN_R;
-  g_sen_l.th_wall = TH_SEN_L;
-
-  g_sen_fr.th_wall = TH_SEN_FR;
-  g_sen_fl.th_wall = TH_SEN_FL;
-
-  g_sen_r.th_control = CONTH_SEN_R;
-  g_sen_l.th_control = CONTH_SEN_L;
-
-  g_con_wall.kp = CON_WALL_KP;
 }
 
 void loop()
@@ -226,19 +180,19 @@ void loop()
 
   if (digitalRead(SW_R) == 0) {
     while (1) {
-      Serial.printf("r_sen  is %d\n\r", g_sen_r.value);
-      Serial.printf("fr_sen is %d\n\r", g_sen_fr.value);
-      Serial.printf("fl_sen is %d\n\r", g_sen_fl.value);
-      Serial.printf("l_sen  is %d\n\r", g_sen_l.value);
-      Serial.printf("VDD    is %d\n\r", g_battery_value);
+      Serial.printf("r_sen  is %d\n\r", g_sensor.sen_r.value);
+      Serial.printf("fr_sen is %d\n\r", g_sensor.sen_fr.value);
+      Serial.printf("fl_sen is %d\n\r", g_sensor.sen_fl.value);
+      Serial.printf("l_sen  is %d\n\r", g_sensor.sen_l.value);
+      Serial.printf("VDD    is %d\n\r", g_sensor.battery_value);
       delay(100);
     }
   }
   digitalWrite(MOTOR_EN, HIGH);
   delay(1000);
-  accelerate(45, 200);
-  oneStep(90 * 3, 200);
-  decelerate(45, 200);
+  g_run.accelerate(45, 200);
+  g_run.oneStep(90 * 3, 200);
+  g_run.decelerate(45, 200);
   delay(1000);
   digitalWrite(MOTOR_EN, LOW);
 }

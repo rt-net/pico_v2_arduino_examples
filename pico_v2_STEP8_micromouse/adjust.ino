@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void mapView(void)
+#include "adjust.h"
+
+ADJUST g_adjust;
+
+void ADJUST::mapView(void)
 {
   Serial.printf("\x1b[2j");
   Serial.printf("\x1b[0;0H");
   Serial.printf("\n\r+");
   for (int i = 0; i < MAZESIZE_X; i++) {
-    switch (g_map_control.getWallData(i, MAZESIZE_Y - 1, north)) {  //黒色は"[30m"
+    switch (g_map.wallDataGet(i, MAZESIZE_Y - 1, north)) {  //黒色は"[30m"
       case NOWALL:
         Serial.printf("\x1b[37m  +");  //NOWALL
         break;
@@ -35,7 +39,7 @@ void mapView(void)
   }
   Serial.printf("\n\r");
   for (int j = (MAZESIZE_Y - 1); j > -1; j--) {
-    switch (g_map_control.getWallData(0, j, west)) {
+    switch (g_map.wallDataGet(0, j, west)) {
       case NOWALL:
         Serial.printf("\x1b[37m ");  //NOWALL
         break;
@@ -50,7 +54,7 @@ void mapView(void)
         break;
     }
     for (int i = 0; i < MAZESIZE_X; i++) {
-      switch (g_map_control.getWallData(i, j, east)) {
+      switch (g_map.wallDataGet(i, j, east)) {
         case NOWALL:
           Serial.printf("\x1b[37m   ");  //NOWALL
           break;
@@ -67,7 +71,7 @@ void mapView(void)
     }
     Serial.printf("\n\r+");
     for (int i = 0; i < MAZESIZE_X; i++) {
-      switch (g_map_control.getWallData(i, j, south)) {
+      switch (g_map.wallDataGet(i, j, south)) {
         case NOWALL:
           Serial.printf("\x1b[37m  +");  //NOWALL
           break;
@@ -86,16 +90,16 @@ void mapView(void)
   }
 }
 
-void viewAdc(void)
+void ADJUST::adcView(void)
 {
-  disableMotor();
+  motorDisable();
 
   while (1) {
-    Serial.printf("r_sen        is\t%d   \r\n", g_sen_r.value);
-    Serial.printf("fr_sen       is\t%d   \r\n", g_sen_fr.value);
-    Serial.printf("fl_sen       is\t%d  \r\n", g_sen_fl.value);
-    Serial.printf("l_sen        is\t%d   \r\n", g_sen_l.value);
-    Serial.printf("VDD          is\t%d mV\r\n", g_battery_value);
+    Serial.printf("r_sen        is\t%d   \r\n", g_sensor.sen_r.value);
+    Serial.printf("fr_sen       is\t%d   \r\n", g_sensor.sen_fr.value);
+    Serial.printf("fl_sen       is\t%d  \r\n", g_sensor.sen_fl.value);
+    Serial.printf("l_sen        is\t%d   \r\n", g_sensor.sen_l.value);
+    Serial.printf("VDD          is\t%d mV\r\n", g_sensor.battery_value);
     Serial.printf("\n\r");  //改行
     delay(100);
     Serial.printf("\x1b[2j");
@@ -103,52 +107,53 @@ void viewAdc(void)
   }
 }
 
-void straightCheck(int section_check)
+void ADJUST::straightCheck(int section_check)
 {
-  enableMotor();
+  motorEnable();
   delay(1000);
-  accelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.accelerate(HALF_SECTION, g_run.search_speed);
   if (section_check > 1) {
-    straight(SECTION * (section_check - 1), SEARCH_SPEED, MAX_SPEED, SEARCH_SPEED);
+    g_run.straight(
+      SECTION * (section_check - 1), g_run.search_speed, g_run.max_speed, g_run.search_speed);
   }
-  decelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.decelerate(HALF_SECTION, g_run.search_speed);
 
-  disableMotor();
+  motorDisable();
 }
 
-void rotationCheck(void)
+void ADJUST::rotationCheck(void)
 {
-  enableMotor();
+  motorEnable();
   delay(1000);
   for (int i = 0; i < 8; i++) {
-    rotate(right, 1);
+    g_run.rotate(right, 1);
   }
-  disableMotor();
+  motorDisable();
 }
 
-void adjustMenu(void)
+void ADJUST::menu(void)
 {
-  unsigned char mode = 1;
+  unsigned char l_mode = 1;
   char LED3_data;
   char sw;
 
   while (1) {
-    setLED(mode);
+    ledSet(l_mode);
     while (1) {
-      sw = getSW();
+      sw = switchGet();
       if (sw != 0) break;
       delay(33);
       LED3_data ^= 1;
-      setLED((mode & 0x7) + ((LED3_data << 3) & 0x08));
+      ledSet((l_mode & 0x7) + ((LED3_data << 3) & 0x08));
     }
     LED3_data = 0;
     switch (sw) {
       case SW_RM:
-        mode = incButton(mode, 7, 1);
+        l_mode = g_misc.buttonInc(l_mode, 7, 1);
         break;
       case SW_LM:
-        okButton();
-        if (execByModeAdjust(mode) == 1) {
+        g_misc.buttonOk();
+        if (modeExec(l_mode) == 1) {
           return;
         }
         break;
@@ -158,12 +163,21 @@ void adjustMenu(void)
   }
 }
 
-unsigned char execByModeAdjust(unsigned char mode)
+unsigned char ADJUST::modeExec(unsigned char l_mode)
 {
-  disableMotor();
-  switch (mode) {
+  motorDisable();
+  switch (l_mode) {
     case 1:
-      viewAdc();
+      buzzerEnable(INC_FREQ);
+      delay(30);
+      buzzerDisable();
+      delay(500);
+      buzzerEnable(INC_FREQ);
+      delay(30);
+      buzzerDisable();
+      webServerSetup();
+      //webserverでセンサの値のばらつきが大きすぎて判断できない時は、webServerSetup()をコメントアウトしadcView()のコメントをはずし、シリアルモニタで確認してください。
+      //      adcView();
       break;
     case 2:
       straightCheck(9);
@@ -173,7 +187,7 @@ unsigned char execByModeAdjust(unsigned char mode)
       rotationCheck();
       break;
     case 4:
-      copyMap();
+      mapCopy();
       mapView();
       break;
 

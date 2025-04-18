@@ -8,8 +8,10 @@
 Pi:Co V2用のArduinoサンプルスケッチ集です。
 
 ## 動作環境
-
-- arduino-esp32 : v3.0.1
+- Arduino IDE v2.3.4
+- arduino-esp32 v3.1.1
+- Async TCP 3.3.6
+- ESP Async WebServer 3.7.2
 
 ## サンプルスケッチについて
 

@@ -12,57 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-short incButton(short data, short limit, short limit_data)
+#include "misc.h"
+
+MISC g_misc;
+
+short MISC::buttonInc(short data, short limit, short limit_data)
 {
   data++;
   if (data > limit) {
     data = limit_data;
   }
-  enableBuzzer(INC_FREQ);
+  buzzerEnable(INC_FREQ);
   delay(30);
-  disableBuzzer();
-  return data;
-}
-short decButton(short data, short limit, short limit_data)
-{
-  data--;
-  if (data < limit) {
-    data = limit_data;
-  }
-  enableBuzzer(DEC_FREQ);
-  delay(30);
-  disableBuzzer();
+  buzzerDisable();
   return data;
 }
 
-void okButton(void)
+void MISC::buttonOk(void)
 {
-  enableBuzzer(DEC_FREQ);
+  buzzerEnable(DEC_FREQ);
   delay(80);
-  enableBuzzer(INC_FREQ);
+  buzzerEnable(INC_FREQ);
   delay(80);
-  disableBuzzer();
+  buzzerDisable();
 }
 
-void goalAppeal(void)  //ゴールしたことをアピールする
+void MISC::goalAppeal(void)  //ゴールしたことをアピールする
 {
   unsigned char led_data;
 
   int wtime = 100;
 
-  disableMotor();
+  motorDisable();
   mapWrite();
 
   for (int j = 0; j < 10; j++) {
     led_data = 1;
     for (int i = 0; i < 4; i++) {
-      setLED(led_data);
+      ledSet(led_data);
       led_data <<= 1;
       delay(wtime);
     }
     led_data = 8;
     for (int i = 0; i < 4; i++) {
-      setLED(led_data);
+      ledSet(led_data);
       led_data >>= 1;
       delay(wtime);
     }
@@ -70,5 +63,72 @@ void goalAppeal(void)  //ゴールしたことをアピールする
   }
 
   delay(500);
-  enableMotor();
+  motorEnable();
+}
+
+void MISC::modeExec(int mode)
+{
+  motorEnable();
+  delay(1000);
+
+  switch (mode) {
+    case 1:
+      g_search.lefthand();
+      break;
+    case 2:  //足立法
+      g_map.positionInit();
+      g_search.adachi(g_map.goal_mx, g_map.goal_my);
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
+      g_search.adachi(0, 0);
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      mapWrite();
+      break;
+    case 3:  //最短走行
+      mapCopy();
+      g_map.positionInit();
+      g_fast.run(g_map.goal_mx, g_map.goal_my);
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
+      g_fast.run(0, 0);
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+    case 7:
+      break;
+    case 8:
+      break;
+    case 9:
+      break;
+    case 10:
+      break;
+    case 11:
+      break;
+    case 12:
+      break;
+    case 13:
+      break;
+    case 14:
+      break;
+    case 15:
+      motorDisable();
+      g_adjust.menu();  //調整メニューに行く
+      break;
+    default:
+      break;
+  }
+  motorDisable();
 }

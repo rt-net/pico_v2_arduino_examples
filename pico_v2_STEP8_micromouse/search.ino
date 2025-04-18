@@ -12,83 +12,85 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void searchLefthand(void)
+#include "search.h"
+
+SEARCH g_search;
+
+void SEARCH::lefthand(void)
 {
-  accelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.accelerate(HALF_SECTION, g_run.search_speed);
 
   while (1) {
-    if (g_sen_l.is_wall == false) {
-      decelerate(HALF_SECTION, SEARCH_SPEED);
-      rotate(left, 1);
-      accelerate(HALF_SECTION, SEARCH_SPEED);
-    } else if ((g_sen_fl.is_wall == false) && (g_sen_fr.is_wall == false)) {
-      straight(SECTION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_SPEED);
-    } else if (g_sen_r.is_wall == false) {
-      decelerate(HALF_SECTION, SEARCH_SPEED);
-      rotate(right, 1);
-      accelerate(HALF_SECTION, SEARCH_SPEED);
+    if (g_sensor.sen_l.is_wall == false) {
+      g_run.decelerate(HALF_SECTION, g_run.search_speed);
+      g_run.rotate(left, 1);
+      g_run.accelerate(HALF_SECTION, g_run.search_speed);
+    } else if ((g_sensor.sen_fl.is_wall == false) && (g_sensor.sen_fr.is_wall == false)) {
+      g_run.straight(SECTION, g_run.search_speed, g_run.search_speed, g_run.search_speed);
+    } else if (g_sensor.sen_r.is_wall == false) {
+      g_run.decelerate(HALF_SECTION, g_run.search_speed);
+      g_run.rotate(right, 1);
+      g_run.accelerate(HALF_SECTION, g_run.search_speed);
     } else {
-      decelerate(HALF_SECTION, SEARCH_SPEED);
-      rotate(right, 2);
-      accelerate(HALF_SECTION, SEARCH_SPEED);
+      g_run.decelerate(HALF_SECTION, g_run.search_speed);
+      g_run.rotate(right, 2);
+      g_run.accelerate(HALF_SECTION, g_run.search_speed);
     }
   }
 }
 
-void searchAdachi(char gx, char gy)
+void SEARCH::adachi(char gx, char gy)
 {
-  t_direction_glob glob_nextdir;
-  t_direction temp_next_dir;
+  t_global_direction glob_nextdir;
+  t_local_direction temp_next_dir;
 
-  temp_next_dir = g_map_control.getNextDir(gx, gy, &glob_nextdir);
-
-  switch (temp_next_dir) {
+  switch (g_map.nextDirGet(gx, gy, &glob_nextdir)) {
     case front:
       break;
     case right:
-      rotate(right, 1);
+      g_run.rotate(right, 1);
       break;
     case left:
-      rotate(left, 1);
+      g_run.rotate(left, 1);
       break;
     case rear:
-      rotate(right, 2);
+      g_run.rotate(right, 2);
       break;
   }
 
-  accelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.accelerate(HALF_SECTION, g_run.search_speed);
 
-  g_map_control.setMyPosDir(glob_nextdir);
-  g_map_control.axisUpdate();
+  g_map.mypos.dir = glob_nextdir;
+  g_map.axisUpdate();
 
-  while ((g_map_control.getMyPosX() != gx) || (g_map_control.getMyPosY() != gy)) {
-    g_map_control.setWall(g_sen_fr.is_wall, g_sen_r.is_wall, g_sen_l.is_wall);
+  while ((g_map.mypos.x != gx) || (g_map.mypos.y != gy)) {
+    g_map.wallSet(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
 
-    switch (g_map_control.getNextDir(gx, gy, &glob_nextdir)) {
+    switch (g_map.nextDirGet(gx, gy, &glob_nextdir)) {
       case front:
-        oneStep(SECTION, SEARCH_SPEED);
+        g_run.oneStep(SECTION, g_run.search_speed);
         break;
       case right:
-        decelerate(HALF_SECTION, SEARCH_SPEED);
-        rotate(right, 1);
-        accelerate(HALF_SECTION, SEARCH_SPEED);
+        g_run.decelerate(HALF_SECTION, g_run.search_speed);
+        g_run.rotate(right, 1);
+        g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case left:
-        decelerate(HALF_SECTION, SEARCH_SPEED);
-        rotate(left, 1);
-        accelerate(HALF_SECTION, SEARCH_SPEED);
+        g_run.decelerate(HALF_SECTION, g_run.search_speed);
+        g_run.rotate(left, 1);
+        g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case rear:
-        decelerate(HALF_SECTION, SEARCH_SPEED);
-        rotate(right, 2);
-        accelerate(HALF_SECTION, SEARCH_SPEED);
+        g_run.decelerate(HALF_SECTION, g_run.search_speed);
+        g_run.rotate(right, 2);
+        g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
     }
 
-    g_map_control.setMyPosDir(glob_nextdir);  //方向を更新
-    g_map_control.axisUpdate();
+    g_map.mypos.dir = glob_nextdir;  //方向を更新
+    g_map.axisUpdate();
   }
 
-  g_map_control.setWall(g_sen_fr.is_wall, g_sen_r.is_wall, g_sen_l.is_wall);
-  decelerate(HALF_SECTION, SEARCH_SPEED);
+  g_map.wallSet(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+  g_run.decelerate(HALF_SECTION, g_run.search_speed);
 }

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "run.h"
+
 #define LED0 42
 #define LED1 41
 #define LED2 15
@@ -37,16 +39,11 @@ hw_timer_t * g_timer3 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
+volatile bool g_motor_move = 0;
+volatile unsigned int g_step_r, g_step_l;
 unsigned short g_step_hz_r = MIN_HZ;
 unsigned short g_step_hz_l = MIN_HZ;
 
-volatile unsigned int g_step_r, g_step_l;
-double g_max_speed;
-double g_min_speed;
-double g_accel = 0.0;
-volatile double g_speed = MIN_SPEED;
-
-volatile bool g_motor_move = 0;
 
 //割り込み
 //目標値の更新周期1kHz
@@ -97,8 +94,8 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  pinMode(SW_L, INPUT);
-  pinMode(SW_R, INPUT);
+  pinMode(SW_L, INPUT_PULLUP);
+  pinMode(SW_R, INPUT_PULLUP);
 
   //motor disable
   pinMode(MOTOR_EN, OUTPUT);
@@ -138,12 +135,12 @@ void loop()
   digitalWrite(MOTOR_EN, HIGH);
   delay(1000);
   digitalWrite(LED0, HIGH);
-  accelerate(45, 200);
+  g_run.accelerate(45, 200);
   digitalWrite(LED1, HIGH);
   digitalWrite(LED2, HIGH);
-  oneStep(90, 200);
+  g_run.oneStep(90, 200);
   digitalWrite(LED3, HIGH);
-  decelerate(45, 200);
+  g_run.decelerate(45, 200);
   digitalWrite(LED0, LOW);
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);

@@ -12,104 +12,177 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void accelerate(int len, int tar_speed)
+RUN g_run;
+
+RUN::RUN()
+{
+  speed = 0.0;
+  accel = 0.0;
+}
+
+//割り込み
+void controlInterrupt(void) { g_run.interrupt(); }
+
+void RUN::interrupt(void)
+{  //割り込み内からコール
+  speed += accel;
+
+  if (speed > max_speed) {
+    speed = max_speed;
+  }
+  if (speed < min_speed) {
+    speed = min_speed;
+  }
+
+  speedSet(speed, speed);
+}
+
+void RUN::dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right)
+{
+  if (dir_left == MOT_FORWARD) {
+    digitalWrite(CW_L, LOW);
+  } else {
+    digitalWrite(CW_L, HIGH);
+  }
+  if (dir_right == MOT_FORWARD) {
+    digitalWrite(CW_R, HIGH);
+  } else {
+    digitalWrite(CW_R, LOW);
+  }
+}
+
+void RUN::counterClear(void) { g_step_r = g_step_l = 0; }
+
+void RUN::speedSet(double l_speed, double r_speed)
+{
+  g_step_hz_l = (int)(l_speed / PULSE);
+  g_step_hz_r = (int)(r_speed / PULSE);
+}
+
+void RUN::stepGet(void)
+{
+  step_lr = g_step_r + g_step_l;
+  step_lr_len = (int)((float)step_lr / 2.0 * PULSE);
+}
+
+void RUN::stop(void) { g_motor_move = 0; }
+
+void RUN::accelerate(int len, int finish_speed)
 {
   int obj_step;
-  g_max_speed = tar_speed;
-  g_accel = 1.5;
-  g_step_r = g_step_l = 0;
-  g_speed = g_min_speed = MIN_SPEED;
-  g_step_hz_r = g_step_hz_l = (unsigned short)(g_speed / PULSE);
 
+  accel = 1.5;
+  speed = min_speed = MIN_SPEED;
+  max_speed = finish_speed;
+  counterClear();
+  speedSet(speed, speed);
+  dirSet(MOT_FORWARD, MOT_FORWARD);
   obj_step = (int)((float)len * 2.0 / PULSE);
-  digitalWrite(CW_R, HIGH);
-  digitalWrite(CW_L, LOW);
   g_motor_move = 1;
 
-  while ((g_step_r + g_step_l) < obj_step) {
-    continue;
+  while (1) {
+    stepGet();
+    if (step_lr > obj_step) {
+      break;
+    }
   }
 }
 
-void oneStep(int len, int tar_speed)
+void RUN::oneStep(int len, int init_speed)
 {
   int obj_step;
-  g_max_speed = tar_speed;
-  g_accel = 0.0;
-  g_step_r = g_step_l = 0;
-  g_speed = g_min_speed = tar_speed;
-  g_step_hz_r = g_step_hz_l = (unsigned short)(g_speed / PULSE);
+
+  accel = 0.0;
+  max_speed = init_speed;
+  speed = min_speed = init_speed;
+  counterClear();
+  speedSet(init_speed, init_speed);
+  dirSet(MOT_FORWARD, MOT_FORWARD);
   obj_step = (int)((float)len * 2.0 / PULSE);
-  digitalWrite(CW_R, HIGH);
-  digitalWrite(CW_L, LOW);
 
-  while ((g_step_r + g_step_l) < obj_step) {
-    continue;
+  while (1) {
+    stepGet();
+    if (step_lr > obj_step) {
+      break;
+    }
   }
 }
 
-void decelerate(int len, int tar_speed)
+void RUN::decelerate(int len, int init_speed)
 {
   int obj_step;
-  g_max_speed = tar_speed;
-  g_accel = 0.0;
-  g_step_r = g_step_l = 0;
-  g_speed = g_min_speed = tar_speed;
-  g_step_hz_r = g_step_hz_l = (unsigned short)(g_speed / PULSE);
+
+  accel = 1.5;
+  max_speed = init_speed;
+  speed = min_speed = init_speed;
+  counterClear();
+  speedSet(init_speed, init_speed);
+  dirSet(MOT_FORWARD, MOT_FORWARD);
   obj_step = (int)((float)len * 2.0 / PULSE);
-  digitalWrite(CW_R, HIGH);
-  digitalWrite(CW_L, LOW);
 
-  while ((len - (g_step_r + g_step_l) / 2.0 * PULSE) >
-         (((g_speed * g_speed) - (MIN_SPEED * MIN_SPEED)) / (2.0 * 1000.0 * 1.5))) {
-    continue;
+  while (1) {
+    stepGet();
+    if (
+      (len - step_lr_len) <
+      (int)(((speed * speed) - (MIN_SPEED * MIN_SPEED)) / (2.0 * 1000.0 * accel))) {
+      break;
+    }
   }
-  g_accel = -1.5;
-  g_min_speed = MIN_SPEED;
+  accel = -1.5;
+  min_speed = MIN_SPEED;
 
-  while ((g_step_r + g_step_l) < obj_step) {
-    continue;
+  while (1) {
+    stepGet();
+    if (step_lr > obj_step) {
+      break;
+    }
   }
 
-  g_motor_move = 0;
+  stop();
 }
 
-void rotate(t_local_dir dir, int times)
+void RUN::rotate(t_local_direction dir, int times)
 {
   int obj_step;
-  g_max_speed = 200.0;
-  g_accel = 0.3;
-  g_step_r = g_step_l = 0;
-  g_speed = g_min_speed = MIN_SPEED;
-  g_step_hz_r = g_step_hz_l = (unsigned short)(g_speed / PULSE);
+
+  accel = 0.3;
+  max_speed = 200.0;
+  speed = min_speed = MIN_SPEED;
+  counterClear();
+  speedSet(MIN_SPEED, MIN_SPEED);
   obj_step = (int)(TREAD_WIDTH * PI / 4.0 * (float)times * 2.0 / PULSE);
 
   switch (dir) {
     case right:
-      digitalWrite(CW_R, LOW);
-      digitalWrite(CW_L, LOW);
+      dirSet(MOT_FORWARD, MOT_BACK);
       g_motor_move = 1;
       break;
     case left:
-      digitalWrite(CW_R, HIGH);
-      digitalWrite(CW_L, HIGH);
+      dirSet(MOT_BACK, MOT_FORWARD);
       g_motor_move = 1;
       break;
     default:
+      dirSet(MOT_FORWARD, MOT_FORWARD);
       g_motor_move = 0;
       break;
   }
 
-  while (((obj_step - (g_step_r + g_step_l)) * PULSE) >
-         (((g_speed * g_speed) - (MIN_SPEED * MIN_SPEED)) / (2.0 * 1000.0 * 0.3))) {
-    continue;
+  while (1) {
+    stepGet();
+    if (
+      (int)((float)obj_step / 2.0f * PULSE - step_lr_len) <
+      (int)(((speed * speed) - (MIN_SPEED * MIN_SPEED)) / (2.0 * 1000.0 * accel))) {
+      break;
+    }
   }
-  g_accel = -0.3;
-  g_min_speed = MIN_SPEED;
+  accel = -0.3;
+  min_speed = MIN_SPEED;
 
-  while ((g_step_r + g_step_l) < obj_step) {
-    continue;
+  while (1) {
+    stepGet();
+    if (step_lr > obj_step) {
+      break;
+    }
   }
-
-  g_motor_move = 0;
+  stop();
 }
