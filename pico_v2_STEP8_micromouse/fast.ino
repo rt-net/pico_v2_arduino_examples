@@ -12,58 +12,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void fastRun(short gx, short gy)
+#include "fast.h"
+
+FAST g_fast;
+
+void FAST::run(short gx, short gy)
 {
-  t_direction_glob glob_nextdir;
+  t_global_direction glob_nextdir;
   int straight_count = 0;
 
-  t_direction temp_next_dir = g_map_control.getNextDir2(gx, gy, &glob_nextdir);
-  switch (temp_next_dir) {
+  switch (g_map.nextDir2Get(gx, gy, &glob_nextdir)) {
     case right:
-      rotate(right, 1);  //右に曲がって
+      g_run.rotate(right, 1);  //右に曲がって
       break;
     case left:
-      rotate(left, 1);  //左に曲がって
+      g_run.rotate(left, 1);  //左に曲がって
       break;
     case rear:
-      rotate(right, 2);  //180度に旋回して
+      g_run.rotate(right, 2);  //180度に旋回して
       break;
     default:
       break;
   }
 
-  accelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.accelerate(HALF_SECTION, g_run.search_speed);
   straight_count = 0;
-  g_map_control.setMyPosDir(glob_nextdir);
-  g_map_control.axisUpdate();
+  g_map.mypos.dir = glob_nextdir;
+  g_map.axisUpdate();
 
-  while ((g_map_control.getMyPosX() != gx) || (g_map_control.getMyPosY() != gy)) {
-    switch (g_map_control.getNextDir2(gx, gy, &glob_nextdir)) {
+  while ((g_map.mypos.x != gx) || (g_map.mypos.y != gy)) {
+    switch (g_map.nextDir2Get(gx, gy, &glob_nextdir)) {
       case front:
         straight_count++;
         break;
       case right:
-        straight(straight_count * SECTION, SEARCH_SPEED, MAX_SPEED, SEARCH_SPEED);
-        straight_count = 0;
-        decelerate(HALF_SECTION, SEARCH_SPEED);
-        rotate(right, 1);
-        accelerate(HALF_SECTION, SEARCH_SPEED);
+        if (straight_count > 0) {
+          g_run.straight(
+            straight_count * SECTION, g_run.search_speed, g_run.max_speed, g_run.search_speed);
+          straight_count = 0;
+        }
+        g_run.decelerate(HALF_SECTION, g_run.search_speed);
+        g_run.rotate(right, 1);
+        g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case left:
-        straight(straight_count * SECTION, SEARCH_SPEED, MAX_SPEED, SEARCH_SPEED);
-        straight_count = 0;
-        decelerate(HALF_SECTION, SEARCH_SPEED);
-        rotate(left, 1);
-        accelerate(HALF_SECTION, SEARCH_SPEED);
+        if (straight_count > 0) {
+          g_run.straight(
+            straight_count * SECTION, g_run.search_speed, g_run.max_speed, g_run.search_speed);
+          straight_count = 0;
+        }
+        g_run.decelerate(HALF_SECTION, g_run.search_speed);
+        g_run.rotate(left, 1);
+        g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       default:
         break;
     }
-    g_map_control.setMyPosDir(glob_nextdir);
-    g_map_control.axisUpdate();
+    g_map.mypos.dir = glob_nextdir;
+    g_map.axisUpdate();
   }
   if (straight_count > 0) {
-    straight(straight_count * SECTION, SEARCH_SPEED, MAX_SPEED, SEARCH_SPEED);
+    g_run.straight(
+      straight_count * SECTION, g_run.search_speed, g_run.max_speed, g_run.search_speed);
   }
-  decelerate(HALF_SECTION, SEARCH_SPEED);
+  g_run.decelerate(HALF_SECTION, g_run.search_speed);
 }

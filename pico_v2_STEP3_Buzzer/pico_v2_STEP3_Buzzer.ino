@@ -31,7 +31,7 @@
 
 char g_mode;
 
-void setLED(char data)
+void ledSet(char data)
 {
   if (data & 0x01) {
     digitalWrite(LED0, HIGH);
@@ -55,7 +55,7 @@ void setLED(char data)
   }
 }
 
-void execByMode(char mode)
+void modeExec(char mode)
 {
   switch (mode) {
     case 1:
@@ -94,7 +94,7 @@ void setup()
   ledcWrite(BUZZER, 0);
 
   g_mode = 1;
-  setLED(g_mode);
+  ledSet(g_mode);
 }
 
 void loop()
@@ -112,7 +112,7 @@ void loop()
       delay(30);
       ledcWrite(BUZZER, 0);
     }
-    setLED(g_mode);
+    ledSet(g_mode);
   }
   if (digitalRead(SW_L) == 0) {
     ledcWriteTone(BUZZER, INC_FREQ);
@@ -121,7 +121,7 @@ void loop()
     delay(80);
     ledcWrite(BUZZER, 0);
     delay(300);
-    execByMode(g_mode);
+    modeExec(g_mode);
   }
   while (!(digitalRead(SW_L) & digitalRead(SW_R))) {
     continue;

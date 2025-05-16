@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "map_manager.h"
+
+MapManager g_map;
+
 //コンストラクタ
 MapManager::MapManager()
 {
   for (int i = 0; i < MAZESIZE_X; i++) {
     for (int j = 0; j < MAZESIZE_Y; j++) {
       wall[i][j].north = wall[i][j].east = wall[i][j].south = wall[i][j].west =
-        _UNKNOWN;  //迷路の全体がわからない事を設定する
+        _UNKNOWN;  //迷路情報を未知で初期化する
     }
   }
 
@@ -34,6 +38,13 @@ MapManager::MapManager()
   //   x,y
   wall[0][0].east = wall[1][0].west = WALL;  //スタート地点の右の壁を追加する
   wall[0][0].north = wall[0][1].south = NOWALL;
+
+  mypos.x = 0;
+  mypos.y = 0;
+  mypos.dir = north;
+
+  goal_mx = 0x07;
+  goal_my = 0x07;
 }
 
 void MapManager::positionInit(void)
@@ -42,15 +53,9 @@ void MapManager::positionInit(void)
   mypos.dir = north;
 }
 
-void MapManager::setMyPosDir(t_direction_glob dir) { mypos.dir = dir; }
-
-short MapManager::getMyPosX(void) { return mypos.x; }
-
-short MapManager::getMyPosY(void) { return mypos.y; }
-
-char MapManager::getWallData(unsigned char x, unsigned char y, t_direction_glob dir)
+char MapManager::wallDataGet(unsigned char x, unsigned char y, t_global_direction l_global_dir)
 {
-  switch (dir) {
+  switch (l_global_dir) {
     case north:
       return wall[x][y].north;
       break;
@@ -67,9 +72,10 @@ char MapManager::getWallData(unsigned char x, unsigned char y, t_direction_glob 
   return 99;
 }
 
-void MapManager::setWallData(unsigned char x, unsigned char y, t_direction_glob dir, char data)
+void MapManager::wallDataSet(
+  unsigned char x, unsigned char y, t_global_direction l_global_dir, char data)
 {
-  switch (dir) {
+  switch (l_global_dir) {
     case north:
       wall[x][y].north = data;
       break;
@@ -84,14 +90,6 @@ void MapManager::setWallData(unsigned char x, unsigned char y, t_direction_glob 
       break;
   }
 }
-
-char MapManager::getGoalX(void) { return goal_mx; }
-
-char MapManager::getGoalY(void) { return goal_my; }
-
-void MapManager::setGoalX(short data) { goal_mx = data; }
-
-void MapManager::setGoalY(short data) { goal_my = data; }
 
 void MapManager::axisUpdate(void)
 {
@@ -111,9 +109,9 @@ void MapManager::axisUpdate(void)
   }
 }
 
-void MapManager::nextDir(t_direction dir)
+void MapManager::nextDir(t_local_direction l_local_dir)
 {
-  if (dir == right) {
+  if (l_local_dir == right) {
     switch (mypos.dir) {
       case north:
         mypos.dir = east;
@@ -128,7 +126,7 @@ void MapManager::nextDir(t_direction dir)
         mypos.dir = north;
         break;
     }
-  } else if (dir == left) {
+  } else if (l_local_dir == left) {
     switch (mypos.dir) {
       case north:
         mypos.dir = west;
@@ -146,332 +144,225 @@ void MapManager::nextDir(t_direction dir)
   }
 }
 
-void MapManager::setWall(bool IS_SEN_FR, bool IS_SEN_R, bool IS_SEN_L)  //壁情報を記録
+void MapManager::wallSet(bool IS_SEN_FR, bool IS_SEN_R, bool IS_SEN_L)  //壁情報を記録
 {
   switch (mypos.dir) {
     case north:
       wall[mypos.x][mypos.y].north = IS_SEN_FR ? WALL : NOWALL;
       wall[mypos.x][mypos.y].east = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].west = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.y < 15) wall[mypos.x][mypos.y + 1].south = IS_SEN_FR ? WALL : NOWALL;
-      if (mypos.x < 15) wall[mypos.x + 1][mypos.y].west = IS_SEN_R ? WALL : NOWALL;
+      if (mypos.y < (MAZESIZE_X - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.x < (MAZESIZE_Y - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_R ? WALL : NOWALL;
       if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_L ? WALL : NOWALL;
       break;
     case east:
       wall[mypos.x][mypos.y].east = IS_SEN_FR ? WALL : NOWALL;
       wall[mypos.x][mypos.y].south = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].north = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.x < 15) wall[mypos.x + 1][mypos.y].west = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.x < (MAZESIZE_X - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_FR ? WALL : NOWALL;
       if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_R ? WALL : NOWALL;
-      if (mypos.y < 15) wall[mypos.x][mypos.y + 1].south = IS_SEN_L ? WALL : NOWALL;
+      if (mypos.y < (MAZESIZE_Y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_L ? WALL : NOWALL;
       break;
     case south:
       wall[mypos.x][mypos.y].south = IS_SEN_FR ? WALL : NOWALL;
       wall[mypos.x][mypos.y].west = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].east = IS_SEN_L ? WALL : NOWALL;
-      if ((mypos.y - 1) > -1) wall[mypos.x][mypos.y - 1].north = IS_SEN_FR ? WALL : NOWALL;
-      if ((mypos.x - 1) > -1) wall[mypos.x - 1][mypos.y].east = IS_SEN_R ? WALL : NOWALL;
-      if ((mypos.x + 1) < 16) wall[mypos.x + 1][mypos.y].west = IS_SEN_L ? WALL : NOWALL;
+      if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_R ? WALL : NOWALL;
+      if (mypos.x < (MAZESIZE_X - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_L ? WALL : NOWALL;
       break;
     case west:
       wall[mypos.x][mypos.y].west = IS_SEN_FR ? WALL : NOWALL;
       wall[mypos.x][mypos.y].north = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].south = IS_SEN_L ? WALL : NOWALL;
-      if ((mypos.x - 1) > -1) wall[mypos.x - 1][mypos.y].east = IS_SEN_FR ? WALL : NOWALL;
-      if ((mypos.y + 1) < 16) wall[mypos.x][mypos.y + 1].south = IS_SEN_R ? WALL : NOWALL;
-      if ((mypos.y - 1) > -1) wall[mypos.x][mypos.y - 1].north = IS_SEN_L ? WALL : NOWALL;
+      if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.y < (MAZESIZE_Y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_R ? WALL : NOWALL;
+      if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_L ? WALL : NOWALL;
       break;
   }
 }
 
-t_direction MapManager::getNextDir(char x, char y, t_direction_glob * dir)
+void MapManager::stepMapSet(
+  unsigned char posX, unsigned char posY, t_global_direction l_global_dir, int * little,
+  t_global_direction * now_dir, int * priority)
 {
-  int little, priority, tmp_priority;
+  int tmp_priority;
+  tmp_priority = priorityGet(posX, posY, l_global_dir);
+  if (steps_map[posX][posY] < *little) {
+    *little = steps_map[posX][posY];
+    *now_dir = l_global_dir;
+    *priority = tmp_priority;
+  } else if (steps_map[posX][posY] == *little) {
+    if (*priority < tmp_priority) {
+      *now_dir = l_global_dir;
+      *priority = tmp_priority;
+    }
+  }
+}
 
-  makeSearchMap(x, y);
+t_local_direction MapManager::nextGdir(t_global_direction * p_global_dir)
+{
+  switch (*p_global_dir) {
+    case north:
+      switch (mypos.dir) {
+        case north:
+          return front;
+          break;
+        case east:
+          return left;
+          break;
+        case south:
+          return rear;
+          break;
+        case west:
+          return right;
+          break;
+        default:
+          return loca_dir_error;
+          break;
+      }
+      break;
+    case east:
+      switch (mypos.dir) {
+        case east:
+          return front;
+          break;
+        case south:
+          return left;
+          break;
+        case west:
+          return rear;
+          break;
+        case north:
+          return right;
+          break;
+        default:
+          return loca_dir_error;
+          break;
+      }
+      break;
+    case south:
+      switch (mypos.dir) {
+        case south:
+          return front;
+          break;
+        case west:
+          return left;
+          break;
+        case north:
+          return rear;
+          break;
+        case east:
+          return right;
+          break;
+        default:
+          return loca_dir_error;
+          break;
+      }
+      break;
+    case west:
+      switch (mypos.dir) {
+        case west:
+          return front;
+          break;
+        case north:
+          return left;
+          break;
+        case east:
+          return rear;
+          break;
+        case south:
+          return right;
+          break;
+        default:
+          return loca_dir_error;
+          break;
+      }
+      break;
+    default:
+      return loca_dir_error;
+      break;
+  }
+}
+
+t_local_direction MapManager::nextDirGet(char x, char y, t_global_direction * p_global_dir)
+{
+  int little, priority;
+
+  searchMapMake(x, y);
   little = 65535;
   priority = 0;
 
   if ((wall[mypos.x][mypos.y].north != WALL) && (mypos.y < (MAZESIZE_Y - 1))) {
-    tmp_priority = getPriority(mypos.x, mypos.y + 1, north);
-    if (steps_map[mypos.x][mypos.y + 1] < little) {
-      little = steps_map[mypos.x][mypos.y + 1];
-      *dir = north;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x][mypos.y + 1] == little) {
-      if (priority < tmp_priority) {
-        *dir = north;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x, mypos.y + 1, north, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].east != WALL) && (mypos.x < (MAZESIZE_X - 1))) {
-    tmp_priority = getPriority(mypos.x + 1, mypos.y, east);
-    if (steps_map[mypos.x + 1][mypos.y] < little) {
-      little = steps_map[mypos.x + 1][mypos.y];
-      *dir = east;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x + 1][mypos.y] == little) {
-      if (priority < tmp_priority) {
-        *dir = east;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x + 1, mypos.y, east, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].south != WALL) && (mypos.y > 0)) {
-    tmp_priority = getPriority(mypos.x, mypos.y - 1, south);
-    if (steps_map[mypos.x][mypos.y - 1] < little) {
-      little = steps_map[mypos.x][mypos.y - 1];
-      *dir = south;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x][mypos.y - 1] == little) {
-      if (priority < tmp_priority) {
-        *dir = south;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x, mypos.y - 1, south, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].west != WALL) && (mypos.x > 0)) {
-    tmp_priority = getPriority(mypos.x - 1, mypos.y, west);
-    if (steps_map[mypos.x - 1][mypos.y] < little) {
-      little = steps_map[mypos.x - 1][mypos.y];
-      *dir = west;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x - 1][mypos.y] == little) {
-      if (priority < tmp_priority) {
-        *dir = west;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x - 1, mypos.y, west, &little, p_global_dir, &priority);
   }
 
   if (steps_map[mypos.x][mypos.y] == 65535) {
     while (1) {
-      setLED(0x0a);
+      ledSet(0x0a);
       delay(500);
-      setLED(0x05);
+      ledSet(0x05);
       delay(500);
     }
   } else {
-    switch (*dir) {
-      case north:
-        switch (mypos.dir) {
-          case north:
-            return front;
-            break;
-          case east:
-            return left;
-            break;
-          case south:
-            return rear;
-            break;
-          case west:
-            return right;
-            break;
-        }
-        break;
-      case east:
-        switch (mypos.dir) {
-          case east:
-            return front;
-            break;
-          case south:
-            return left;
-            break;
-          case west:
-            return rear;
-            break;
-          case north:
-            return right;
-            break;
-        }
-        break;
-      case south:
-        switch (mypos.dir) {
-          case south:
-            return front;
-            break;
-          case west:
-            return left;
-            break;
-          case north:
-            return rear;
-            break;
-          case east:
-            return right;
-            break;
-        }
-        break;
-      case west:
-        switch (mypos.dir) {
-          case west:
-            return front;
-            break;
-          case north:
-            return left;
-            break;
-          case east:
-            return rear;
-            break;
-          case south:
-            return right;
-            break;
-        }
-        break;
-    }
+    return nextGdir(p_global_dir);
   }
 
   return front;
 }
 
-t_direction MapManager::getNextDir2(short x, short y, t_direction_glob * dir)
+t_local_direction MapManager::nextDir2Get(short x, short y, t_global_direction * p_global_dir)
 {
-  int little, priority, tmp_priority;
+  int little, priority;
 
-  makeMap2(x, y);
+  map2Make(x, y);
   little = 65535;
 
   priority = 0;
 
   if ((wall[mypos.x][mypos.y].north == NOWALL) && ((mypos.y + 1) < MAZESIZE_Y)) {
-    tmp_priority = getPriority(mypos.x, mypos.y + 1, north);
-    if (steps_map[mypos.x][mypos.y + 1] < little) {
-      little = steps_map[mypos.x][mypos.y + 1];
-      *dir = north;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x][mypos.y + 1] == little) {
-      if (priority < tmp_priority) {
-        *dir = north;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x, mypos.y + 1, north, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].east == NOWALL) && ((mypos.x + 1) < MAZESIZE_X)) {
-    tmp_priority = getPriority(mypos.x + 1, mypos.y, east);
-    if (steps_map[mypos.x + 1][mypos.y] < little) {
-      little = steps_map[mypos.x + 1][mypos.y];
-      *dir = east;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x + 1][mypos.y] == little) {
-      if (priority < tmp_priority) {
-        *dir = east;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x + 1, mypos.y, east, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].south == NOWALL) && (mypos.y > 0)) {
-    tmp_priority = getPriority(mypos.x, mypos.y - 1, south);
-    if (steps_map[mypos.x][mypos.y - 1] < little) {
-      little = steps_map[mypos.x][mypos.y - 1];
-      *dir = south;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x][mypos.y - 1] == little) {
-      if (priority < tmp_priority) {
-        *dir = south;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x, mypos.y - 1, south, &little, p_global_dir, &priority);
   }
 
   if ((wall[mypos.x][mypos.y].west == NOWALL) && (mypos.x > 0)) {
-    tmp_priority = getPriority(mypos.x - 1, mypos.y, west);
-    if (steps_map[mypos.x - 1][mypos.y] < little) {
-      little = steps_map[mypos.x - 1][mypos.y];
-      *dir = west;
-      priority = tmp_priority;
-    } else if (steps_map[mypos.x - 1][mypos.y] == little) {
-      if (priority < tmp_priority) {
-        *dir = west;
-        priority = tmp_priority;
-      }
-    }
+    stepMapSet(mypos.x - 1, mypos.y, west, &little, p_global_dir, &priority);
   }
 
   if (steps_map[mypos.x][mypos.y] == 65535) {  //Goalにいけない
     while (1) {
-      setLED(0x0a);
+      ledSet(0x0a);
       delay(500);
-      setLED(0x05);
+      ledSet(0x05);
       delay(500);
     }
   } else {
-    switch (*dir) {
-      case north:
-        switch (mypos.dir) {
-          case north:
-            return front;
-            break;
-          case east:
-            return left;
-            break;
-          case south:
-            return rear;
-            break;
-          case west:
-            return right;
-            break;
-        }
-        break;
-      case east:
-        switch (mypos.dir) {
-          case east:
-            return front;
-            break;
-          case south:
-            return left;
-            break;
-          case west:
-            return rear;
-            break;
-          case north:
-            return right;
-            break;
-        }
-        break;
-      case south:
-        switch (mypos.dir) {
-          case south:
-            return front;
-            break;
-          case west:
-            return left;
-            break;
-          case north:
-            return rear;
-            break;
-          case east:
-            return right;
-            break;
-        }
-        break;
-      case west:
-        switch (mypos.dir) {
-          case west:
-            return front;
-            break;
-          case north:
-            return left;
-            break;
-          case east:
-            return rear;
-            break;
-          case south:
-            return right;
-            break;
-        }
-        break;
-    }
+    return nextGdir(p_global_dir);
   }
 
   return front;
 }
 
-void MapManager::makeSearchMap(int x, int y)
+void MapManager::searchMapMake(int x, int y)
 {
   bool change_flag;
 
@@ -487,47 +378,32 @@ void MapManager::makeSearchMap(int x, int y)
     for (int i = 0; i < MAZESIZE_X; i++) {
       for (int j = 0; j < MAZESIZE_Y; j++) {
         if (steps_map[i][j] == 65535) continue;
-        if (j < (MAZESIZE_Y - 1)) {
-          if (wall[i][j].north != WALL) {
-            if (steps_map[i][j + 1] == 65535) {
-              steps_map[i][j + 1] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if (
+          (j < (MAZESIZE_Y - 1)) && (wall[i][j].north != WALL) && (steps_map[i][j + 1] == 65535)) {
+          steps_map[i][j + 1] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (i < (MAZESIZE_X - 1)) {
-          if (wall[i][j].east != WALL) {
-            if (steps_map[i + 1][j] == 65535) {
-              steps_map[i + 1][j] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if ((i < (MAZESIZE_X - 1)) && (wall[i][j].east != WALL) && (steps_map[i + 1][j] == 65535)) {
+          steps_map[i + 1][j] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (j > 0) {
-          if (wall[i][j].south != WALL) {
-            if (steps_map[i][j - 1] == 65535) {
-              steps_map[i][j - 1] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if ((j > 0) && (wall[i][j].south != WALL) && (steps_map[i][j - 1] == 65535)) {
+          steps_map[i][j - 1] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (i > 0) {
-          if (wall[i][j].west != WALL) {
-            if (steps_map[i - 1][j] == 65535) {
-              steps_map[i - 1][j] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if ((i > 0) && (wall[i][j].west != WALL) && (steps_map[i - 1][j] == 65535)) {
+          steps_map[i - 1][j] = steps_map[i][j] + 1;
+          change_flag = true;
         }
       }
     }
   } while (change_flag == true);
 }
 
-void MapManager::makeMap2(int x, int y)
+void MapManager::map2Make(int x, int y)
 {
   bool change_flag;
 
@@ -543,47 +419,34 @@ void MapManager::makeMap2(int x, int y)
     for (int i = 0; i < MAZESIZE_X; i++) {
       for (int j = 0; j < MAZESIZE_Y; j++) {
         if (steps_map[i][j] == 65535) continue;
-        if (j < (MAZESIZE_Y - 1)) {
-          if (wall[i][j].north == NOWALL) {
-            if (steps_map[i][j + 1] == 65535) {
-              steps_map[i][j + 1] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if (
+          (j < (MAZESIZE_Y - 1)) && (wall[i][j].north == NOWALL) &&
+          (steps_map[i][j + 1] == 65535)) {
+          steps_map[i][j + 1] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (i < (MAZESIZE_X - 1)) {
-          if (wall[i][j].east == NOWALL) {
-            if (steps_map[i + 1][j] == 65535) {
-              steps_map[i + 1][j] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if (
+          (i < (MAZESIZE_X - 1)) && (wall[i][j].east == NOWALL) && (steps_map[i + 1][j] == 65535)) {
+          steps_map[i + 1][j] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (j > 0) {
-          if (wall[i][j].south == NOWALL) {
-            if (steps_map[i][j - 1] == 65535) {
-              steps_map[i][j - 1] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if ((j > 0) && (wall[i][j].south == NOWALL) && (steps_map[i][j - 1] == 65535)) {
+          steps_map[i][j - 1] = steps_map[i][j] + 1;
+          change_flag = true;
         }
 
-        if (i > 0) {
-          if (wall[i][j].west == NOWALL) {
-            if (steps_map[i - 1][j] == 65535) {
-              steps_map[i - 1][j] = steps_map[i][j] + 1;
-              change_flag = true;
-            }
-          }
+        if ((i > 0) && (wall[i][j].west == NOWALL) && (steps_map[i - 1][j] == 65535)) {
+          steps_map[i - 1][j] = steps_map[i][j] + 1;
+          change_flag = true;
         }
       }
     }
   } while (change_flag == true);
 }
 
-int MapManager::getPriority(unsigned char x, unsigned char y, t_direction_glob dir)
+int MapManager::priorityGet(unsigned char x, unsigned char y, t_global_direction dir)
 {
   int priority;
 

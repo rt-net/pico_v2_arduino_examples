@@ -12,16 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-void controlInterrupt(void)
+#ifndef SRC_SENSOR_H_
+#define SRC_SENSOR_H_
+
+#include "run.h"
+
+typedef struct
 {
-  g_speed += g_accel;
+  short value;
+  short p_value;
+  short error;
+  short ref;
+  short th_wall;
+  short th_control;
+  bool is_wall;
+  bool is_control;
+} t_sensor;
 
-  if (g_speed > g_max_speed) {
-    g_speed = g_max_speed;
-  }
-  if (g_speed < g_min_speed) {
-    g_speed = g_min_speed;
-  }
+class SENSOR
+{
+public:
+  volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
+  volatile short battery_value;
+  void interrupt(void);
+};
 
-  g_step_hz_l = g_step_hz_r = (unsigned short)(g_speed / PULSE);
-}
+extern SENSOR g_sensor;
+
+#endif /* SRC_SENSOR_H_ */

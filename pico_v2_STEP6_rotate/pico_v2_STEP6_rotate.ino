@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "run.h"
+
 #define LED0 42
 #define LED1 41
 #define LED2 15
@@ -32,30 +34,16 @@
 #define MIN_SPEED (MIN_HZ * PULSE)
 #define TREAD_WIDTH (31.5)
 
-typedef enum {
-  front,
-  right,
-  rear,
-  left,
-  unknown,
-} t_local_dir;
-
 hw_timer_t * g_timer0 = NULL;
 hw_timer_t * g_timer2 = NULL;
 hw_timer_t * g_timer3 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
+volatile bool g_motor_move = 0;
+volatile unsigned int g_step_r, g_step_l;
 unsigned short g_step_hz_r = MIN_HZ;
 unsigned short g_step_hz_l = MIN_HZ;
-
-volatile unsigned int g_step_r, g_step_l;
-double g_max_speed;
-double g_min_speed;
-double g_accel = 0.0;
-volatile double g_speed = MIN_SPEED;
-
-volatile bool g_motor_move = 0;
 
 //割り込み
 //目標値の更新周期1kHz
@@ -146,13 +134,13 @@ void loop()
   }
   digitalWrite(MOTOR_EN, HIGH);
   delay(1000);
-  rotate(right, 1);
+  g_run.rotate(right, 1);
   delay(1000);
-  rotate(left, 1);
+  g_run.rotate(left, 1);
   delay(1000);
-  rotate(right, 2);
+  g_run.rotate(right, 2);
   delay(1000);
-  rotate(left, 2);
+  g_run.rotate(left, 2);
   delay(1000);
   digitalWrite(MOTOR_EN, LOW);
 }

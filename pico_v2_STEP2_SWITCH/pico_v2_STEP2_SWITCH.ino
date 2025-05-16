@@ -47,7 +47,7 @@ void loop()
   }
   if (digitalRead(SW_L) == 0) {
     digitalWrite(LED2, (++g_state_l) & 0x01);
-    digitalWrite(LED1, (g_state_l)&0x01);
+    digitalWrite(LED1, g_state_l & 0x01);
   }
   delay(30);
   while (!(digitalRead(SW_L) && digitalRead(SW_R))) {
